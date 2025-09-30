@@ -3,331 +3,463 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kantin Digital Sekolah</title>
+    <title>Aplikasi Absensi Online</title>
+    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
+        /* Custom styles for a cleaner look */
         body {
             font-family: 'Inter', sans-serif;
         }
-        .card-enter {
-            animation: card-enter 0.5s ease-out forwards;
+        .btn {
+            transition: all 0.2s ease-in-out;
         }
-        @keyframes card-enter {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .loader {
+            border-top-color: #3498db;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .tab-btn.active {
+            border-bottom-color: #3b82f6;
+            color: #3b82f6;
         }
     </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
-    <div id="app" class="max-w-7xl mx-auto p-4">
-
-        <!-- Header -->
-        <header class="bg-white shadow-md rounded-xl p-4 mb-6 flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-bold text-indigo-600">Kantin Digital</h1>
-                <p class="text-gray-500">Pesan makanan favoritmu dengan mudah!</p>
+    <div class="w-full max-w-3xl bg-white rounded-xl shadow-lg p-6 md:p-8">
+        <!-- Login Container -->
+        <div id="loginContainer">
+            <div class="text-center mb-8">
+                <i class="fa-solid fa-clipboard-user text-5xl text-blue-500 mb-4 inline-block"></i>
+                <h1 class="text-3xl font-bold text-gray-800">Login Absensi</h1>
+                <p class="text-gray-500 mt-1">Masuk untuk melanjutkan</p>
             </div>
-            <div id="info-pengguna" class="text-right">
-                <p class="font-semibold text-gray-800">Budi</p>
-                <p class="text-sm text-green-600 font-bold">Saldo: Rp 50.000</p>
+            <div class="space-y-4">
+                 <div class="bg-blue-50 border-l-4 border-blue-400 text-blue-700 p-4 rounded-md" role="alert">
+                    <p class="font-bold">Info Login</p>
+                    <ul class="list-disc list-inside text-sm">
+                        <li><b>Admin:</b> Username: <code class="bg-blue-200 rounded px-1">admin</code>, Password: <code class="bg-blue-200 rounded px-1">admin123</code></li>
+                        <li><b>User:</b> Masukkan nama Anda sebagai username (password tidak diperlukan).</li>
+                    </ul>
+                </div>
+                <div>
+                    <label for="usernameInput" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                    <input type="text" id="usernameInput" placeholder="Masukkan username" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                </div>
+                <div>
+                    <label for="passwordInput" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input type="password" id="passwordInput" placeholder="Masukkan password (khusus admin)" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                </div>
+                <button id="loginBtn" class="w-full bg-blue-500 text-white font-semibold py-3 px-4 rounded-md btn hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Login
+                </button>
             </div>
-        </header>
+        </div>
 
-        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- App Container -->
+        <div id="appContainer" class="hidden space-y-6">
+            <!-- Header -->
+            <div class="flex justify-between items-center">
+                <div class="text-left">
+                    <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
+                        <i class="fa-solid fa-clipboard-user text-blue-500"></i>
+                        <span>Aplikasi Absensi Online</span>
+                    </h1>
+                     <p id="userInfo" class="text-gray-500 text-sm mt-1"></p>
+                </div>
+                <button id="logoutBtn" class="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-md btn hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
+                    <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
+                </button>
+            </div>
 
-            <!-- Kolom Menu -->
-            <div class="lg:col-span-2">
-                <h2 class="text-xl font-semibold mb-4 text-gray-700">Menu Hari Ini</h2>
-                <div id="menu-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    <!-- Kartu Menu akan dimasukkan oleh JavaScript -->
+            <!-- Action Buttons for Users -->
+            <div id="userActions" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button id="checkInBtn" class="w-full bg-green-500 text-white font-semibold py-3 px-4 rounded-md btn hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    Absen Masuk
+                </button>
+                <button id="checkOutBtn" class="w-full bg-red-500 text-white font-semibold py-3 px-4 rounded-md btn hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    Absen Pulang
+                </button>
+            </div>
+            
+            <!-- Message Area -->
+            <div id="messageArea" class="text-center p-3 rounded-md text-sm font-medium" style="display: none;"></div>
+
+            <!-- Admin Tabs -->
+            <div id="adminTabs" class="hidden border-b border-gray-200">
+                <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+                    <button id="tabAttendance" class="tab-btn whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        Daftar Kehadiran
+                    </button>
+                    <button id="tabUsers" class="tab-btn whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        Pengelola Pengguna
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Content Views -->
+            <div id="attendanceView">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Daftar Kehadiran Hari Ini</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                        <thead id="attendanceHead" class="bg-gray-50"></thead>
+                        <tbody id="attendanceBody" class="divide-y divide-gray-200"></tbody>
+                    </table>
                 </div>
             </div>
 
-            <!-- Kolom Keranjang -->
-            <div class="lg:col-span-1">
-                <div class="bg-white shadow-md rounded-xl p-6 sticky top-6">
-                    <h2 class="text-xl font-semibold mb-4 border-b pb-3 text-gray-700">Keranjang Pesanan</h2>
-                    <div id="keranjang-items" class="space-y-4 max-h-80 overflow-y-auto pr-2">
-                        <!-- Item keranjang akan dimasukkan oleh JavaScript -->
-                        <p id="keranjang-kosong" class="text-gray-500 text-center py-8">Keranjang masih kosong.</p>
-                    </div>
-                    <div class="mt-6 border-t pt-4">
-                        <div class="flex justify-between items-center font-bold text-lg">
-                            <span class="text-gray-800">Total:</span>
-                            <span id="keranjang-total" class="text-indigo-600">Rp 0</span>
-                        </div>
-                        <button id="btn-bayar" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg mt-4 hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                            <i data-lucide="shopping-cart"></i>
-                            <span>Pesan & Bayar</span>
-                        </button>
-                    </div>
+            <div id="userManagementView" class="hidden">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Daftar Semua Pengguna</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pengguna</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userManagementBody" class="divide-y divide-gray-200"></tbody>
+                    </table>
                 </div>
             </div>
-
-        </main>
-    </div>
-    
-    <!-- Modal Pembayaran -->
-    <div id="payment-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
-        <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md text-center transform transition-all">
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">Konfirmasi Pembayaran</h2>
-            <p class="text-gray-500 mb-6">Pindai QR Code di bawah ini untuk membayar.</p>
             
-            <!-- Simulasi QR Code -->
-            <div class="bg-gray-200 p-4 rounded-lg inline-block mb-6">
-                 
-
-[Image of QR code for digital payment]
-
-                <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-qr-code"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M16 16v.01"/><path d="M16 21h.01"/><path d="M11 16h.01"/><path d="M11 21v.01"/><path d="M16 11h.01"/><path d="M21 11v.01"/><path d="M11 11h.01"/><path d="M11 3v5"/><path d="M3 11h5"/><path d="M8 8L3 3"/><path d="M8 3v.01"/><path d="M3 8h.01"/></svg>
-            </div>
-
-            <p class="text-lg font-semibold">Total Tagihan:</p>
-            <p id="modal-total" class="text-3xl font-bold text-indigo-600 mb-6">Rp 0</p>
-            
-            <div class="flex gap-4">
-                 <button id="btn-batal" class="w-full bg-gray-200 text-gray-800 font-bold py-3 rounded-lg hover:bg-gray-300 transition-colors">Batal</button>
-                 <button id="btn-konfirmasi-bayar" class="w-full bg-green-500 text-white font-bold py-3 rounded-lg hover:bg-green-600 transition-colors">Konfirmasi Bayar</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal Notifikasi -->
-    <div id="notification-modal" class="fixed top-5 right-5 bg-white shadow-lg rounded-lg p-4 max-w-sm hidden z-50 border-l-4">
-        <div class="flex items-center">
-            <div id="notification-icon" class="mr-3"></div>
-            <div>
-                <p id="notification-title" class="font-bold"></p>
-                <p id="notification-message" class="text-sm text-gray-600"></p>
+             <div id="loader" class="flex justify-center items-center py-8">
+                <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
             </div>
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, onSnapshot, query, where, setLogLevel, deleteDoc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        lucide.createIcons();
+        // --- DO NOT EDIT: Provided by the environment ---
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "test", authDomain: "test.firebaseapp.com", projectId: "test" };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-attendance-app';
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : undefined;
+        // -------------------------------------------------
 
-        // --- DATA SIMULASI (Di aplikasi nyata, ini dari server/database) ---
-        const pengguna = {
-            nama: 'Budi',
-            saldo: 50000,
-        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        setLogLevel('debug');
 
-        const menuHarian = [
-            { id: 1, nama: 'Nasi Goreng Spesial', harga: 15000, gambar: 'https://placehold.co/400x300/e2e8f0/4a5568?text=Nasi+Goreng' },
-            { id: 2, nama: 'Mie Ayam Bakso', harga: 12000, gambar: 'https://placehold.co/400x300/e2e8f0/4a5568?text=Mie+Ayam' },
-            { id: 3, nama: 'Soto Ayam Lamongan', harga: 10000, gambar: 'https://placehold.co/400x300/e2e8f0/4a5568?text=Soto+Ayam' },
-            { id: 4, nama: 'Gado-Gado', harga: 10000, gambar: 'https://placehold.co/400x300/e2e8f0/4a5568?text=Gado-Gado' },
-            { id: 5, nama: 'Es Teh Manis', harga: 3000, gambar: 'https://placehold.co/400x300/e2e8f0/4a5568?text=Es+Teh' },
-            { id: 6, nama: 'Es Jeruk', harga: 4000, gambar: 'https://placehold.co/400x300/e2e8f0/4a5568?text=Es+Jeruk' },
-        ];
+        // DOM Elements
+        const loginContainer = document.getElementById('loginContainer');
+        const appContainer = document.getElementById('appContainer');
+        const usernameInput = document.getElementById('usernameInput');
+        const passwordInput = document.getElementById('passwordInput');
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const checkInBtn = document.getElementById('checkInBtn');
+        const checkOutBtn = document.getElementById('checkOutBtn');
+        const messageArea = document.getElementById('messageArea');
+        const loader = document.getElementById('loader');
+        const userInfo = document.getElementById('userInfo');
+        const userActions = document.getElementById('userActions');
+        // Views & Tables
+        const adminTabs = document.getElementById('adminTabs');
+        const tabAttendance = document.getElementById('tabAttendance');
+        const tabUsers = document.getElementById('tabUsers');
+        const attendanceView = document.getElementById('attendanceView');
+        const attendanceHead = document.getElementById('attendanceHead');
+        const attendanceBody = document.getElementById('attendanceBody');
+        const userManagementView = document.getElementById('userManagementView');
+        const userManagementBody = document.getElementById('userManagementBody');
 
-        let keranjang = [];
+        let currentUserId = null;
+        let isAuthReady = false;
+        let loggedInUser = null; // {name: '...', role: '...'}
+        let attendanceUnsubscribe = null;
 
-        // --- REFERENSI ELEMEN DOM ---
-        const menuContainer = document.getElementById('menu-container');
-        const keranjangItemsContainer = document.getElementById('keranjang-items');
-        const keranjangTotalEl = document.getElementById('keranjang-total');
-        const keranjangKosongEl = document.getElementById('keranjang-kosong');
-        const infoPenggunaEl = document.getElementById('info-pengguna');
-        const btnBayar = document.getElementById('btn-bayar');
-        
-        // Modal Pembayaran
-        const paymentModal = document.getElementById('payment-modal');
-        const modalTotalEl = document.getElementById('modal-total');
-        const btnBatal = document.getElementById('btn-batal');
-        const btnKonfirmasiBayar = document.getElementById('btn-konfirmasi-bayar');
-        
-        // Modal Notifikasi
-        const notificationModal = document.getElementById('notification-modal');
-        const notificationIcon = document.getElementById('notification-icon');
-        const notificationTitle = document.getElementById('notification-title');
-        const notificationMessage = document.getElementById('notification-message');
-
-
-        // --- FUNGSI ---
-        const formatRupiah = (angka) => {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
-        };
-
-        const updateInfoPengguna = () => {
-            infoPenggunaEl.innerHTML = `
-                <p class="font-semibold text-gray-800">${pengguna.nama}</p>
-                <p class="text-sm text-green-600 font-bold">Saldo: ${formatRupiah(pengguna.saldo)}</p>
-            `;
-        };
-
-        const renderMenu = () => {
-            menuContainer.innerHTML = '';
-            menuHarian.forEach((item, index) => {
-                const card = document.createElement('div');
-                card.className = 'bg-white shadow-md rounded-xl overflow-hidden card-enter';
-                card.style.animationDelay = `${index * 50}ms`;
-                card.innerHTML = `
-                    <img src="${item.gambar}" alt="${item.nama}" class="w-full h-40 object-cover">
-                    <div class="p-4">
-                        <h3 class="font-semibold text-lg text-gray-800">${item.nama}</h3>
-                        <p class="text-gray-600 font-bold my-2">${formatRupiah(item.harga)}</p>
-                        <button data-id="${item.id}" class="btn-tambah w-full bg-indigo-100 text-indigo-700 font-semibold py-2 rounded-lg hover:bg-indigo-200 transition-colors flex items-center justify-center gap-2">
-                            <i data-lucide="plus-circle" class="w-5 h-5"></i>
-                            <span>Tambah</span>
-                        </button>
-                    </div>
-                `;
-                menuContainer.appendChild(card);
-            });
-            lucide.createIcons();
-        };
-
-        const renderKeranjang = () => {
-            keranjangItemsContainer.innerHTML = '';
-            let total = 0;
-
-            if (keranjang.length === 0) {
-                keranjangItemsContainer.appendChild(keranjangKosongEl);
-                btnBayar.disabled = true;
+        // --- Authentication ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUserId = user.uid;
             } else {
-                keranjangKosongEl.remove();
-                btnBayar.disabled = false;
-                
-                keranjang.forEach(item => {
-                    total += item.harga * item.jumlah;
-                    const itemEl = document.createElement('div');
-                    itemEl.className = 'flex justify-between items-center';
-                    itemEl.innerHTML = `
-                        <div>
-                            <p class="font-semibold text-gray-800">${item.nama}</p>
-                            <p class="text-sm text-gray-500">${formatRupiah(item.harga)}</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button data-id="${item.id}" data-action="kurang" class="btn-jumlah w-7 h-7 bg-gray-200 rounded-full font-bold">-</button>
-                            <span>${item.jumlah}</span>
-                            <button data-id="${item.id}" data-action="tambah" class="btn-jumlah w-7 h-7 bg-gray-200 rounded-full font-bold">+</button>
-                        </div>
-                    `;
-                    keranjangItemsContainer.appendChild(itemEl);
-                });
+                 try {
+                    if (initialAuthToken) await signInWithCustomToken(auth, initialAuthToken);
+                    else await signInAnonymously(auth);
+                 } catch (error) {
+                    console.error("Authentication failed:", error);
+                    showMessage("Gagal mengautentikasi. Silakan refresh halaman.", true, true);
+                 }
             }
-            
-            keranjangTotalEl.textContent = formatRupiah(total);
-            return total;
-        };
+            if (!isAuthReady) isAuthReady = true;
+        });
 
-        const tambahKeKeranjang = (id) => {
-            const itemDiMenu = menuHarian.find(item => item.id === id);
-            const itemDiKeranjang = keranjang.find(item => item.id === id);
-
-            if (itemDiKeranjang) {
-                itemDiKeranjang.jumlah++;
-            } else {
-                keranjang.push({ ...itemDiMenu, jumlah: 1 });
-            }
-            renderKeranjang();
-            showNotification('success', 'Berhasil!', `${itemDiMenu.nama} ditambahkan ke keranjang.`);
-        };
-        
-        const updateJumlahKeranjang = (id, action) => {
-            const itemDiKeranjang = keranjang.find(item => item.id === id);
-            if (!itemDiKeranjang) return;
-
-            if (action === 'tambah') {
-                itemDiKeranjang.jumlah++;
-            } else if (action === 'kurang') {
-                itemDiKeranjang.jumlah--;
-            }
-            
-            if(itemDiKeranjang.jumlah <= 0){
-                keranjang = keranjang.filter(item => item.id !== id);
-            }
-            renderKeranjang();
-        };
-
-        const prosesPembayaran = () => {
-            const total = renderKeranjang();
-            if (pengguna.saldo < total) {
-                showNotification('error', 'Gagal!', 'Saldo Anda tidak mencukupi untuk pembayaran ini.');
+        // --- Helper Functions ---
+        function showMessage(message, isError = false, isLoginError = false) {
+            const targetMessageArea = isLoginError ? document.getElementById('loginMessageArea') : messageArea;
+            if(isLoginError && !targetMessageArea) {
+                const newMsgArea = document.createElement('div');
+                newMsgArea.id = 'loginMessageArea';
+                newMsgArea.className = 'text-center p-3 rounded-md text-sm font-medium mt-4';
+                loginContainer.appendChild(newMsgArea);
+                showMessage(message, isError, isLoginError);
                 return;
             }
-            
-            pengguna.saldo -= total;
-            keranjang = [];
-            
-            updateInfoPengguna();
-            renderKeranjang();
-            paymentModal.classList.add('hidden');
-            
-            showNotification('success', 'Pembayaran Berhasil!', `Terima kasih atas pesanan Anda. Saldo tersisa ${formatRupiah(pengguna.saldo)}.`);
-        };
+            if(!targetMessageArea) return;
+            targetMessageArea.textContent = message;
+            targetMessageArea.className = `text-center p-3 rounded-md text-sm font-medium ${isError ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'} ${isLoginError ? 'mt-4' : ''}`;
+            targetMessageArea.style.display = 'block';
+            setTimeout(() => { targetMessageArea.style.display = 'none'; }, 3000);
+        }
+
+        const getCurrentDateString = () => new Date().toISOString().slice(0, 10);
+        const getCurrentTimeString = () => new Date().toLocaleTimeString('id-ID', { hour12: false });
+        const sanitizeName = (name) => name.trim().toLowerCase().replace(/\s+/g, '-');
         
-        const showNotification = (type, title, message) => {
-            notificationModal.classList.remove('hidden');
-            notificationModal.classList.remove('border-green-500', 'border-red-500');
-            
-            if (type === 'success') {
-                notificationModal.classList.add('border-green-500');
-                notificationIcon.innerHTML = `<i data-lucide="check-circle" class="text-green-500"></i>`;
+        // --- View Management ---
+        function showAppView() {
+            loginContainer.classList.add('hidden');
+            appContainer.classList.remove('hidden');
+            userInfo.textContent = `Login sebagai: ${loggedInUser.name} (${loggedInUser.role})`;
+
+            if (loggedInUser.role === 'admin') {
+                userActions.classList.add('hidden');
+                adminTabs.classList.remove('hidden');
+                switchView('attendance');
             } else {
-                notificationModal.classList.add('border-red-500');
-                notificationIcon.innerHTML = `<i data-lucide="x-circle" class="text-red-500"></i>`;
+                userActions.classList.remove('hidden');
+                adminTabs.classList.add('hidden');
+                attendanceView.classList.remove('hidden');
+                userManagementView.classList.add('hidden');
+                listenForAttendance();
             }
-            
-            notificationTitle.textContent = title;
-            notificationMessage.textContent = message;
-            lucide.createIcons();
-            
-            setTimeout(() => {
-                notificationModal.classList.add('hidden');
-            }, 3000);
-        };
+            renderTableHeader();
+        }
 
-
-        // --- EVENT LISTENERS ---
-        menuContainer.addEventListener('click', (e) => {
-            const btn = e.target.closest('.btn-tambah');
-            if (btn) {
-                const id = parseInt(btn.dataset.id);
-                tambahKeKeranjang(id);
-            }
-        });
-
-        keranjangItemsContainer.addEventListener('click', (e) => {
-            const btn = e.target.closest('.btn-jumlah');
-            if (btn) {
-                const id = parseInt(btn.dataset.id);
-                const action = btn.dataset.action;
-                updateJumlahKeranjang(id, action);
-            }
-        });
-
-        btnBayar.addEventListener('click', () => {
-            const total = renderKeranjang();
-            modalTotalEl.textContent = formatRupiah(total);
-            paymentModal.classList.remove('hidden');
-        });
+        function showLoginView() {
+            if (attendanceUnsubscribe) attendanceUnsubscribe();
+            appContainer.classList.add('hidden');
+            loginContainer.classList.remove('hidden');
+            loggedInUser = null;
+            passwordInput.value = '';
+            usernameInput.value = '';
+        }
         
-        btnBatal.addEventListener('click', () => {
-            paymentModal.classList.add('hidden');
+        function switchView(view) {
+            if (view === 'attendance') {
+                tabAttendance.classList.add('active');
+                tabUsers.classList.remove('active');
+                attendanceView.classList.remove('hidden');
+                userManagementView.classList.add('hidden');
+                listenForAttendance();
+            } else if (view === 'users') {
+                tabAttendance.classList.remove('active');
+                tabUsers.classList.add('active');
+                attendanceView.classList.add('hidden');
+                userManagementView.classList.remove('hidden');
+                if(attendanceUnsubscribe) attendanceUnsubscribe();
+                loadUsers();
+            }
+        }
+
+        // --- Login / Logout Logic ---
+        function handleLogin() {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
+            if (!username) { showMessage("Username tidak boleh kosong!", true, true); return; }
+
+            if (username.toLowerCase() === 'admin' && password === 'admin123') {
+                loggedInUser = { name: 'Admin', role: 'admin' };
+                showAppView();
+            } else if (username.toLowerCase() === 'admin') {
+                showMessage("Password admin salah!", true, true);
+            } else {
+                loggedInUser = { name: username, role: 'user' };
+                showAppView();
+            }
+        }
+        
+        // --- Firestore Logic ---
+        const attendanceCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'attendance');
+        
+        function renderTableHeader() {
+             const isAdmin = loggedInUser && loggedInUser.role === 'admin';
+             attendanceHead.innerHTML = `
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jam Masuk</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jam Pulang</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    ${isAdmin ? '<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>' : ''}
+                </tr>`;
+        }
+
+        function listenForAttendance() {
+            if (!isAuthReady) return;
+            if (attendanceUnsubscribe) attendanceUnsubscribe();
+            
+            loader.style.display = 'flex';
+            attendanceBody.innerHTML = '';
+            const today = getCurrentDateString();
+            const q = query(attendanceCollectionRef, where("date", "==", today));
+            const isAdmin = loggedInUser && loggedInUser.role === 'admin';
+
+            attendanceUnsubscribe = onSnapshot(q, (querySnapshot) => {
+                attendanceBody.innerHTML = '';
+                if (querySnapshot.empty) {
+                    attendanceBody.innerHTML = `<tr><td colspan="${isAdmin ? 6 : 5}" class="text-center text-gray-500 py-4">Belum ada data kehadiran hari ini.</td></tr>`;
+                } else {
+                     querySnapshot.docs.sort((a, b) => a.data().name.localeCompare(b.data().name)).forEach((doc) => {
+                        const data = doc.data();
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-gray-50";
+                        const statusClass = data.status === 'Hadir' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+                        const actionCell = isAdmin ? `<td class="px-4 py-3 text-sm text-center"><button data-id="${doc.id}" class="delete-attendance-btn text-red-500 hover:text-red-700"><i class="fa-solid fa-trash-can"></i></button></td>` : '';
+                        tr.innerHTML = `
+                            <td class="px-4 py-3 text-sm text-gray-800 font-medium">${data.name}</td>
+                            <td class="px-4 py-3 text-sm text-gray-600">${data.date}</td>
+                            <td class="px-4 py-3 text-sm text-gray-600">${data.checkInTime}</td>
+                            <td class="px-4 py-3 text-sm text-gray-600">${data.checkOutTime || '-'}</td>
+                            <td class="px-4 py-3 text-sm"><span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">${data.status}</span></td>
+                            ${actionCell}`;
+                        attendanceBody.appendChild(tr);
+                    });
+                }
+                loader.style.display = 'none';
+            }, (error) => {
+                console.error("Error getting attendance: ", error);
+                showMessage("Gagal memuat data.", true);
+                loader.style.display = 'none';
+            });
+        }
+        
+        async function loadUsers() {
+            loader.style.display = 'flex';
+            userManagementBody.innerHTML = '';
+            try {
+                const q = query(attendanceCollectionRef);
+                const querySnapshot = await getDocs(q);
+                const userNames = new Set();
+                querySnapshot.forEach(doc => userNames.add(doc.data().name));
+                
+                if (userNames.size === 0) {
+                     userManagementBody.innerHTML = `<tr><td colspan="2" class="text-center text-gray-500 py-4">Belum ada pengguna terdaftar.</td></tr>`;
+                } else {
+                    const sortedUsers = Array.from(userNames).sort();
+                    sortedUsers.forEach(name => {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-gray-50";
+                        tr.innerHTML = `
+                            <td class="px-4 py-3 text-sm text-gray-800 font-medium">${name}</td>
+                            <td class="px-4 py-3 text-sm">
+                                <button data-name="${name}" class="delete-user-btn text-red-500 hover:text-red-700">
+                                    <i class="fa-solid fa-user-slash mr-2"></i>Hapus Pengguna
+                                </button>
+                            </td>`;
+                        userManagementBody.appendChild(tr);
+                    });
+                }
+            } catch (error) {
+                console.error("Error loading users:", error);
+                showMessage("Gagal memuat daftar pengguna.", true);
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+
+        async function handleDeleteAttendance(docId) {
+            if (confirm("Yakin ingin menghapus data absensi ini?")) {
+                try {
+                    await deleteDoc(doc(attendanceCollectionRef, docId));
+                    showMessage("Data absensi berhasil dihapus.");
+                } catch (error) {
+                    console.error("Error deleting document: ", error);
+                    showMessage("Gagal menghapus data.", true);
+                }
+            }
+        }
+
+        async function handleDeleteUser(userName) {
+            if (confirm(`YAKIN ingin menghapus pengguna "${userName}" dan SEMUA riwayat absensinya? Tindakan ini tidak dapat diurungkan.`)) {
+                loader.style.display = 'flex';
+                try {
+                    const q = query(attendanceCollectionRef, where("name", "==", userName));
+                    const snapshot = await getDocs(q);
+                    const batch = writeBatch(db);
+                    snapshot.forEach(doc => {
+                        batch.delete(doc.ref);
+                    });
+                    await batch.commit();
+                    showMessage(`Pengguna "${userName}" dan semua datanya berhasil dihapus.`);
+                    loadUsers(); // Refresh the user list
+                } catch (error) {
+                    console.error("Error deleting user:", error);
+                    showMessage("Gagal menghapus pengguna.", true);
+                } finally {
+                     loader.style.display = 'none';
+                }
+            }
+        }
+
+        async function handleCheckIn() {
+            if (!loggedInUser || loggedInUser.role !== 'user') return;
+            const name = loggedInUser.name;
+            const today = getCurrentDateString();
+            const docId = `${today}-${sanitizeName(name)}`;
+            const docRef = doc(attendanceCollectionRef, docId);
+            try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) { showMessage("Anda sudah melakukan absen masuk hari ini.", true); } 
+                else {
+                    const newRecord = { name, date: today, checkInTime: getCurrentTimeString(), checkOutTime: null, status: 'Hadir', recordOwnerId: currentUserId };
+                    await setDoc(docRef, newRecord);
+                    showMessage("Absen masuk berhasil!");
+                }
+            } catch (e) { console.error("Error checking in: ", e); showMessage("Terjadi kesalahan.", true); }
+        }
+
+        async function handleCheckOut() {
+            if (!loggedInUser || loggedInUser.role !== 'user') return;
+            const name = loggedInUser.name;
+            const today = getCurrentDateString();
+            const docId = `${today}-${sanitizeName(name)}`;
+            const docRef = doc(attendanceCollectionRef, docId);
+            try {
+                const docSnap = await getDoc(docRef);
+                if (!docSnap.exists()) { showMessage("Anda belum absen masuk hari ini.", true); } 
+                else if (docSnap.data().checkOutTime) { showMessage("Anda sudah absen pulang.", true); }
+                else {
+                    await updateDoc(docRef, { checkOutTime: getCurrentTimeString(), status: 'Pulang' });
+                    showMessage("Absen pulang berhasil!");
+                }
+            } catch (e) { console.error("Error checking out: ", e); showMessage("Terjadi kesalahan.", true); }
+        }
+
+        // Event Listeners
+        loginBtn.addEventListener('click', handleLogin);
+        logoutBtn.addEventListener('click', showLoginView);
+        checkInBtn.addEventListener('click', handleCheckIn);
+        checkOutBtn.addEventListener('click', handleCheckOut);
+        tabAttendance.addEventListener('click', () => switchView('attendance'));
+        tabUsers.addEventListener('click', () => switchView('users'));
+        
+        appContainer.addEventListener('click', (e) => {
+            const delAttendanceBtn = e.target.closest('.delete-attendance-btn');
+            const delUserBtn = e.target.closest('.delete-user-btn');
+            if (delAttendanceBtn) { handleDeleteAttendance(delAttendanceBtn.dataset.id); }
+            if (delUserBtn) { handleDeleteUser(delUserBtn.dataset.name); }
         });
 
-        btnKonfirmasiBayar.addEventListener('click', prosesPembayaran);
-
-
-        // --- INISIALISASI ---
-        updateInfoPengguna();
-        renderMenu();
-        renderKeranjang();
-    });
     </script>
 </body>
-
 </html>
